@@ -1,57 +1,88 @@
-# FLAC元数据处理工具集
+# 视频转FLAC音频工具
 
 [English](README_en.md) | 中文说明
 
-这是一个用于处理FLAC文件元数据的工具集，包括视频转音频、歌词嵌入、元数据读写等功能。
+[![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-required-orange.svg)](https://ffmpeg.org)
 
-## 功能特点
+这是一个功能完整的视频转FLAC音频工具，支持歌词嵌入和元数据管理。项目提供了命令行界面和图形用户界面两种使用方式。
 
-- **视频转音频**：将视频文件转换为FLAC格式音频
-- **歌词嵌入**：支持LRC格式歌词嵌入，保留时间戳
-- **元数据管理**：读取和写入FLAC文件元数据
-- **封面图片支持**：支持多种格式的封面图片
+## ✨ 主要功能
+
+- 🎵 **视频转音频**：将视频文件（MP4、AVI、MKV等）转换为FLAC无损音频
+- 📝 **歌词嵌入**：支持LRC格式歌词嵌入，保留时间戳
+- 🏷️ **元数据管理**：添加歌曲信息（标题、艺术家、专辑、日期、流派等）
+- 🖼️ **封面支持**：支持多种格式的封面图片
   - 本地图片路径
   - 网络图片URL
   - Base64编码图片
   - B站特殊格式URL
-- **格式转换**：自动转换AVIF等格式为JPEG
-- **音频裁剪**：支持精确的时间定位和时长控制
-- **多编码支持**：自动检测UTF-8、GBK、GB2312等编码
+- 🔧 **格式转换**：自动转换AVIF等格式为JPEG
+- ✂️ **音频裁剪**：支持精确的时间定位和时长控制
+- 🌐 **多编码支持**：自动检测UTF-8、GBK、GB2312等编码
 
-## 安装依赖
+## 📦 安装
+
+### 环境要求
+
+- Python 3.7 或更高版本
+- FFmpeg（用于音视频处理）
+
+### 安装依赖
 
 ```bash
 pip install Pillow requests
 ```
 
-系统需要安装FFmpeg：
-- Windows: 从 https://ffmpeg.org/download.html 下载
-- Linux: `sudo apt install ffmpeg`
-- macOS: `brew install ffmpeg`
+### 安装FFmpeg
 
-## 使用方法
+- **Windows**: 从 [FFmpeg官网](https://ffmpeg.org/download.html) 下载
+- **Linux**: `sudo apt install ffmpeg`
+- **macOS**: `brew install ffmpeg`
 
-### 1. video_to_audio.py - 视频转音频工具
+或使用项目提供的下载助手：
 
-将视频文件转换为FLAC格式音频，支持歌词嵌入和元数据添加。
+```bash
+python download_ffmpeg.py
+```
 
+## 🚀 快速开始
+
+### 1. GUI方式（推荐）
+
+#### 运行GUI程序
+```bash
+python video_to_audio_gui.py
+# 或双击运行：启动GUI.bat
+```
+
+#### 打包成独立EXE
+```bash
+# 方法1：使用批处理脚本（推荐）
+双击运行：一键打包.bat
+
+# 方法2：使用Python脚本
+pip install pyinstaller
+python build_exe.py
+```
+
+打包后的exe文件位于 `dist` 目录中，可以在没有Python环境的Windows电脑上运行。
+
+### 2. 命令行方式
+
+#### 基本使用
 ```bash
 # 基本转换
 python video_to_audio.py input.mp4
 
-# 删除前7秒，转换并嵌入歌词
-python video_to_audio.py input.mp4 -ss 7 -l lyrics.lrc
+# 嵌入歌词
+python video_to_audio.py input.mp4 -l lyrics.lrc
 
-# 从第30秒开始转换
-python video_to_audio.py video.mp4 -ss 30
-
-# 指定输出文件和压缩级别
-python video_to_audio.py audio.wav -o output.flac -c 8
-
-# 从元数据文件添加元数据（包括封面图片）
+# 添加元数据
 python video_to_audio.py input.mp4 -metadata metadata.txt
 
-# 同时嵌入歌词和添加元数据
+# 同时嵌入歌词和元数据
 python video_to_audio.py input.mp4 -l lyrics.lrc -metadata metadata.txt
 
 # 所有功能组合
@@ -59,90 +90,40 @@ python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -metadata me
 ```
 
 #### 参数说明
-- `-ss <时间>`: 从指定时间开始
-- `-t <时长>`: 裁剪指定时长
+- `-ss <时间>`: 从指定时间开始（如 30 或 01:30）
+- `-t <时长>`: 裁剪指定时长（如 60 或 02:00）
 - `-o <输出文件>`: 指定输出文件
 - `-l <LRC文件>`: 嵌入歌词文件
-- `-metadata <文件>`: 从元数据文件添加元数据（标题、艺术家、封面等）
-- `-c <级别>`: FLAC压缩级别 (0-8)
+- `-metadata <文件>`: 从元数据文件添加元数据
+- `-c <级别>`: FLAC压缩级别 (0-8，默认5)
 
-### 2. flac_metadata_utils.py - 元数据处理工具
+## 📁 项目结构
 
-#### 查看元数据
-```bash
-# 查看FLAC文件所有元数据
-python flac_metadata_utils.py audio.flac
+```
+videoToAudioWithLRC/
+├── video_to_audio.py          # 命令行主程序
+├── video_to_audio_gui.py      # GUI图形界面程序
+├── flac_metadata_utils.py     # 元数据处理核心模块
+├── lrc_time_adjuster.py       # 歌词时间调整工具
+├── view_lyrics.py             # 歌词查看工具
+├── build_exe.py              # 打包成exe的脚本
+├── create_portable_package.py # 创建便携版包的脚本
+├── download_ffmpeg.py        # FFmpeg下载助手
+├── 一键打包.bat               # 一键打包批处理
+├── 启动GUI.bat                # 启动GUI批处理
+├── test/                      # 测试文件目录
+│   ├── *.mp4                  # 测试视频
+│   ├── *.lrc                  # 测试歌词
+│   ├── *.txt                  # 测试元数据
+│   └── *.flac                 # 生成的音频文件
+├── new_test/                  # 单元测试目录
+│   ├── test_flac_metadata_utils.py
+│   ├── test_video_to_audio.py
+│   └── run_all_tests.py
+└── README.md                  # 本文档
 ```
 
-#### 写入元数据
-```bash
-# 从元数据文件写入
-python flac_metadata_utils.py audio.flac --metadata metadata.txt
-
-# 写入到新文件
-python flac_metadata_utils.py audio.flac --metadata metadata.txt output.flac
-```
-
-#### 元数据文件格式示例
-```
-标题(TITLE)：歌曲名称
-艺术家(ARTIST)：歌手名
-专辑(ALBUM)：专辑名
-日期(DATE)：2024-01-01
-流派(GENRE)：流行
-作曲家(COMPOSER)：作曲者
-词作者(LYRICIST)：作词者
-封面图片(COVER_IMAGE):/path/to/image.jpg
-封面图片(COVER_IMAGE):https://example.com/image.jpg
-封面图片(COVER_IMAGE):data:image/jpeg;base64,/9j/4AAQ...
-```
-
-## 测试
-
-### 运行单元测试
-```bash
-# 运行所有测试
-python new_test/run_all_tests.py
-
-# 创建示例测试文件
-python new_test/test_flac_metadata_utils.py --create-samples
-
-# 创建手动测试指南
-python new_test/test_video_to_audio.py --create-guide
-```
-
-### 测试文件结构
-```
-new_test/
-├── __init__.py
-├── test_flac_metadata_utils.py  # 元数据处理测试
-├── test_video_to_audio.py       # 视频转换测试
-├── run_all_tests.py            # 运行所有测试
-└── sample_files/               # 示例测试文件
-```
-
-## 使用示例
-
-### 视频转音频 + 元数据管理
-
-```bash
-# 1. 基本视频转FLAC
-python video_to_audio.py video.mp4
-
-# 2. 嵌入歌词
-python video_to_audio.py video.mp4 -l lyrics.lrc
-
-# 3. 添加完整元数据（包括封面）
-python video_to_audio.py video.mp4 -metadata metadata.txt
-
-# 4. 同时嵌入歌词和元数据
-python video_to_audio.py video.mp4 -l lyrics.lrc -metadata metadata.txt
-
-# 5. 复杂组合示例
-python video_to_audio.py video.mp4 -ss 01:30 -t 02:00 -l lyrics.lrc -metadata metadata.txt -o output.flac -c 8
-```
-
-### 元数据文件格式示例
+## 📋 元数据文件格式
 
 创建一个 `metadata.txt` 文件：
 
@@ -154,7 +135,9 @@ python video_to_audio.py video.mp4 -ss 01:30 -t 02:00 -l lyrics.lrc -metadata me
 流派(GENRE)：流行
 作曲家(COMPOSER)：作曲者
 词作者(LYRICIST)：作词者
-封面图片(COVER_IMAGE):/path/to/cover.jpg
+封面图片(COVER_IMAGE): /path/to/image.jpg
+封面图片(COVER_IMAGE): https://example.com/image.jpg
+封面图片(COVER_IMAGE): data:image/jpeg;base64,/9j/4AAQ...
 ```
 
 ### 支持的图片格式
@@ -173,29 +156,41 @@ data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...
 - PNG（支持透明度）
 - AVIF（自动转换为JPEG）
 
-## 项目结构
+## 🧪 测试
 
-```
-videoToAudioWithLRC/
-├── video_to_audio.py          # 视频转音频主程序（支持-metadata参数）
-├── flac_metadata_utils.py     # 元数据处理工具库
-│   ├── 歌词处理功能
-│   ├── 元数据读写功能
-│   ├── 图片处理功能
-│   └── 信息提取功能
-├── new_test/                  # 单元测试
-│   ├── test_flac_metadata_utils.py
-│   ├── test_video_to_audio.py
-│   └── run_all_tests.py
-├── test/                      # 测试示例文件
-│   ├── *.mp4                  # 测试视频
-│   ├── *.lrc                  # 测试歌词
-│   ├── *.txt                  # 测试元数据
-│   └── *.flac                 # 生成的音频文件
-└── README.md                  # 本文档
+运行单元测试：
+
+```bash
+# 运行所有测试
+python new_test/run_all_tests.py
+
+# 创建示例测试文件
+python new_test/test_flac_metadata_utils.py --create-samples
+
+# 创建手动测试指南
+python new_test/test_video_to_audio.py --create-guide
 ```
 
-## 功能流程图
+## 🎯 GUI功能特点
+
+### 1. 文件选择
+- 支持选择视频或音频文件作为输入
+- 支持选择LRC歌词文件（可选）
+- 支持选择元数据文件（可选）
+- 支持自定义输出文件路径
+
+### 2. 参数设置
+- 设置开始时间（裁剪开始位置）
+- 设置持续时间（裁剪时长）
+- FLAC压缩级别滑块调节（0-8）
+
+### 3. 执行与反馈
+- 实时显示执行日志
+- 不同类型的日志颜色区分
+- 转换完成后自动通知
+- 一键打开输出文件夹
+
+## 🔄 功能流程图
 
 ```
 输入文件 (MP4/AVI等)
@@ -209,34 +204,51 @@ videoToAudioWithLRC/
 输出FLAC文件 (包含歌词和/或元数据)
 ```
 
-## 常见问题
+## 💡 使用技巧
+
+1. **批量处理**：可以编写批处理脚本批量处理多个文件
+2. **元数据模板**：创建不同风格的元数据模板文件，方便复用
+3. **自动命名**：不指定输出文件时，程序会自动生成带标记的文件名
+4. **错误排查**：查看日志输出可以了解处理过程中的详细信息
+
+## ❓ 常见问题
 
 ### 1. FFmpeg未安装
 ```
 错误: 未找到FFmpeg
 ```
-解决：从 https://ffmpeg.org/download.html 下载安装
+**解决方案**：
+- 运行 `python download_ffmpeg.py` 自动下载
+- 或从 https://ffmpeg.org/download.html 下载安装
 
 ### 2. 内存不足
 处理大文件时可能出现内存不足
-解决：分批处理或使用更强大的机器
+**解决方案**：分批处理或使用更强大的机器
 
 ### 3. 编码问题
 ```
 UnicodeDecodeError
 ```
-解决：确保文件使用UTF-8编码保存
+**解决方案**：确保文件使用UTF-8编码保存
 
 ### 4. 权限问题
 ```
 错误: 无法写入文件
 ```
-解决：检查文件权限，确保有写入权限
+**解决方案**：检查文件权限，确保有写入权限
 
-## 开发说明
+## 🛠️ 开发说明
+
+### 技术栈
+- **Python 3**：主要编程语言
+- **Tkinter**：GUI界面框架
+- **FFmpeg**：音视频处理引擎
+- **PIL/Pillow**：图像处理
+- **PyInstaller**：打包工具
 
 ### 代码结构
-- `video_to_audio.py`: 调用flac_metadata_utils处理元数据
+- `video_to_audio.py`: 命令行主程序，调用flac_metadata_utils处理元数据
+- `video_to_audio_gui.py`: GUI主程序，提供图形化操作界面
 - `flac_metadata_utils.py`: 核心元数据处理功能
   - 歌词处理（parse_lrc_file, embed_lyrics_to_flac）
   - 元数据读写（parse_metadata_file, write_metadata_to_flac）
@@ -244,15 +256,47 @@ UnicodeDecodeError
   - 信息提取（get_flac_metadata, display_metadata）
 
 ### 扩展功能
-可以通过修改`flac_metadata_utils.py`来添加更多功能：
-- 支持更多音频格式
+可以通过修改相应模块来添加更多功能：
+- 支持更多音频格式（AAC、OGG等）
 - 添加更多元数据字段
 - 支持更多图片格式
+- 实现批量转换功能
 
-## 许可证
+## 📝 更新日志
 
-MIT License
+### v2.0.0 (2024-12-11)
+- ✨ 新增GUI图形界面
+- ✨ 支持打包成独立exe文件
+- ✨ 添加FFmpeg自动下载功能
+- 🐛 优化图片处理，支持B站特殊URL
+- 📚 完善文档和测试用例
 
-## 贡献
+### v1.0.0 (2024-12-10)
+- 🎉 初始版本发布
+- ✨ 支持视频转FLAC
+- ✨ 支持歌词嵌入
+- ✨ 支持元数据管理
+
+## 🤝 贡献
 
 欢迎提交Issue和Pull Request！
+
+1. Fork 本项目
+2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的改动 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启一个 Pull Request
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 🙏 致谢
+
+- [FFmpeg](https://ffmpeg.org) - 强大的音视频处理工具
+- [Pillow](https://pillow.readthedocs.io) - 友好的Python图像处理库
+- [PyInstaller](https://pyinstaller.readthedocs.io) - Python程序打包工具
+
+---
+
+如果这个项目对你有帮助，请给它一个 ⭐️！
