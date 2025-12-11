@@ -1,8 +1,8 @@
-标题(TITLE)：12
-艺术家(ARTIST)：23
-专辑(ALBUM)：34
-日期(DATE)：45
-流派(GENRE)：56
-作曲家(COMPOSER)：67
-词作者(LYRICIST)：78
+标题(TITLE)：标题
+艺术家(ARTIST)：艺术家
+专辑(ALBUM)：专辑
+日期(DATE)：日期
+流派(GENRE)：流派
+作曲家(COMPOSER)：作曲家
+词作者(LYRICIST)：词作者
 封面图片(COVER_IMAGE):https://i2.hdslb.com/bfs/archive/2b280d836df5d6af7384d647caad7db6bc5ff863.jpg@672w_378h_1c_!web-home-common-cover.avif

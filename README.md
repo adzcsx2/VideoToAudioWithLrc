@@ -33,7 +33,7 @@ pip install Pillow requests
 
 ### 1. video_to_audio.py - 视频转音频工具
 
-将视频文件转换为FLAC格式音频，支持歌词嵌入。
+将视频文件转换为FLAC格式音频，支持歌词嵌入和元数据添加。
 
 ```bash
 # 基本转换
@@ -48,8 +48,14 @@ python video_to_audio.py video.mp4 -ss 30
 # 指定输出文件和压缩级别
 python video_to_audio.py audio.wav -o output.flac -c 8
 
+# 从元数据文件添加元数据（包括封面图片）
+python video_to_audio.py input.mp4 -metadata metadata.txt
+
+# 同时嵌入歌词和添加元数据
+python video_to_audio.py input.mp4 -l lyrics.lrc -metadata metadata.txt
+
 # 所有功能组合
-python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -c 8
+python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -metadata metadata.txt -c 8
 ```
 
 #### 参数说明
@@ -57,6 +63,7 @@ python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -c 8
 - `-t <时长>`: 裁剪指定时长
 - `-o <输出文件>`: 指定输出文件
 - `-l <LRC文件>`: 嵌入歌词文件
+- `-metadata <文件>`: 从元数据文件添加元数据（标题、艺术家、封面等）
 - `-c <级别>`: FLAC压缩级别 (0-8)
 
 ### 2. flac_metadata_utils.py - 元数据处理工具
@@ -114,34 +121,92 @@ new_test/
 └── sample_files/               # 示例测试文件
 ```
 
-## 支持的图片格式
+## 使用示例
 
-### 网络图片
+### 视频转音频 + 元数据管理
+
+```bash
+# 1. 基本视频转FLAC
+python video_to_audio.py video.mp4
+
+# 2. 嵌入歌词
+python video_to_audio.py video.mp4 -l lyrics.lrc
+
+# 3. 添加完整元数据（包括封面）
+python video_to_audio.py video.mp4 -metadata metadata.txt
+
+# 4. 同时嵌入歌词和元数据
+python video_to_audio.py video.mp4 -l lyrics.lrc -metadata metadata.txt
+
+# 5. 复杂组合示例
+python video_to_audio.py video.mp4 -ss 01:30 -t 02:00 -l lyrics.lrc -metadata metadata.txt -o output.flac -c 8
+```
+
+### 元数据文件格式示例
+
+创建一个 `metadata.txt` 文件：
+
+```text
+标题(TITLE)：歌曲名称
+艺术家(ARTIST)：歌手名
+专辑(ALBUM)：专辑名称
+日期(DATE)：2024-12-11
+流派(GENRE)：流行
+作曲家(COMPOSER)：作曲者
+词作者(LYRICIST)：作词者
+封面图片(COVER_IMAGE):/path/to/cover.jpg
+```
+
+### 支持的图片格式
+
+#### 网络图片
 - 常规URL: `https://example.com/image.jpg`
 - B站格式: `https://i2.hdslb.com/bfs/archive/xxx.jpg@672w_378h_1c_!web-search-common-cover.avif`
 
-### Base64图片
+#### Base64图片
 ```
 data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...
 ```
 
-### 本地图片
+#### 本地图片
 - JPEG/JPG
 - PNG（支持透明度）
-- AVIF（自动转换）
+- AVIF（自动转换为JPEG）
 
 ## 项目结构
 
 ```
 videoToAudioWithLRC/
-├── video_to_audio.py          # 视频转音频主程序
+├── video_to_audio.py          # 视频转音频主程序（支持-metadata参数）
 ├── flac_metadata_utils.py     # 元数据处理工具库
+│   ├── 歌词处理功能
+│   ├── 元数据读写功能
+│   ├── 图片处理功能
+│   └── 信息提取功能
 ├── new_test/                  # 单元测试
 │   ├── test_flac_metadata_utils.py
 │   ├── test_video_to_audio.py
 │   └── run_all_tests.py
 ├── test/                      # 测试示例文件
+│   ├── *.mp4                  # 测试视频
+│   ├── *.lrc                  # 测试歌词
+│   ├── *.txt                  # 测试元数据
+│   └── *.flac                 # 生成的音频文件
 └── README.md                  # 本文档
+```
+
+## 功能流程图
+
+```
+输入文件 (MP4/AVI等)
+     ↓
+视频转FLAC (FFmpeg)
+     ↓
+[可选] 嵌入歌词
+     ↓
+[可选] 添加元数据 (从metadata.txt)
+     ↓
+输出FLAC文件 (包含歌词和/或元数据)
 ```
 
 ## 常见问题

@@ -15,7 +15,12 @@ from pathlib import Path
 from typing import Optional, Dict, Tuple
 
 # 导入元数据处理模块
-from flac_metadata_utils import embed_lyrics_to_flac, write_metadata_to_flac
+from flac_metadata_utils import (
+    embed_lyrics_to_flac,
+    write_metadata_to_flac,
+    write_metadata_from_file,
+    parse_metadata_file
+)
 
 # Constants
 DEFAULT_FLAC_COMPRESSION = 5
@@ -79,22 +84,23 @@ def format_time(seconds):
 
 def process_media(input_path: str, output_path: Optional[str] = None, start_time: Optional[float] = None,
                  duration: Optional[float] = None, lrc_path: Optional[str] = None,
-                 flac_compression: int = DEFAULT_FLAC_COMPRESSION) -> bool:
+                 flac_compression: int = DEFAULT_FLAC_COMPRESSION, metadata_file: Optional[str] = None) -> bool:
     """
     处理媒体文件，转换为FLAC格式
     支持歌词嵌入（保留时间戳）
+    支持元数据文件添加元数据（包括封面图片）
     """
     input_path = Path(input_path)
 
     # 生成输出文件名
     if output_path is None:
         suffix = ".flac"
-        if lrc_path:
-            # 如果输入文件已经包含_with_lyrics，添加_new_lyrics
-            if "_with_lyrics" in input_path.stem:
-                suffix = f"_new_lyrics{suffix}"
+        if lrc_path or metadata_file:
+            # 如果输入文件已经包含_with_metadata，添加_new_metadata
+            if "_with_metadata" in input_path.stem:
+                suffix = f"_new_metadata{suffix}"
             else:
-                suffix = f"_with_lyrics{suffix}"
+                suffix = f"_with_metadata{suffix}"
         output_path = input_path.parent / f"{input_path.stem}_trimmed{suffix}"
     else:
         output_path = Path(output_path)
@@ -112,6 +118,12 @@ def process_media(input_path: str, output_path: Optional[str] = None, start_time
             print(f"错误: LRC文件 '{lrc_path}' 不存在")
             return False
 
+    if metadata_file:
+        metadata_file = Path(metadata_file)
+        if not metadata_file.exists():
+            print(f"错误: 元数据文件 '{metadata_file}' 不存在")
+            return False
+
     # 显示信息
     print(f"\n输入文件: {input_path}")
     print(f"输出文件: {output_path}")
@@ -122,31 +134,59 @@ def process_media(input_path: str, output_path: Optional[str] = None, start_time
     print(f"输出格式: FLAC")
     if lrc_path:
         print(f"歌词文件: {lrc_path}")
+    if metadata_file:
+        print(f"元数据文件: {metadata_file}")
 
     print("\n正在处理...")
 
     try:
-        # 检查是否只是添加歌词（不进行音频处理）
-        just_add_lyrics = (input_path.suffix.lower() == '.flac' and
-                          start_time is None and
-                          duration is None and
-                          lrc_path is not None)
+        # 检查是否只是添加歌词/元数据（不进行音频处理）
+        just_add_metadata = (input_path.suffix.lower() == '.flac' and
+                           start_time is None and
+                           duration is None and
+                           (lrc_path is not None or metadata_file is not None))
 
-        if just_add_lyrics:
-            # 直接复制FLAC文件并添加歌词
+        if just_add_metadata:
+            # 直接复制FLAC文件
             shutil.copy2(input_path, output_path)
             print(f"复制FLAC文件完成")
 
             # 嵌入歌词
-            print("\n正在嵌入歌词...")
-            success = embed_lyrics_to_flac(output_path, lrc_path, output_path)
+            if lrc_path:
+                print("\n正在嵌入歌词...")
+                success = embed_lyrics_to_flac(output_path, lrc_path, output_path)
 
-            if success:
-                print("歌词嵌入成功!")
-                return True
-            else:
-                print("歌词嵌入失败，但音频文件已生成")
-                return False
+                if success:
+                    print("歌词嵌入成功!")
+                else:
+                    print("歌词嵌入失败，但音频文件已生成")
+
+            # 添加元数据
+            if metadata_file:
+                if lrc_path:
+                    print("\n正在添加元数据...")
+                else:
+                    print("\n正在添加元数据...")
+
+                # 创建临时文件名来避免原地编辑
+                temp_metadata_output = output_path.with_name(f"{output_path.stem}_temp_metadata{output_path.suffix}")
+
+                success = write_metadata_from_file(output_path, metadata_file, temp_metadata_output)
+
+                if success:
+                    # 成功后替换原文件
+                    time.sleep(0.2)  # 等待文件释放
+                    if output_path.exists():
+                        output_path.unlink()
+                    shutil.move(str(temp_metadata_output), str(output_path))
+                    print("元数据添加成功!")
+                else:
+                    print("元数据添加失败，但音频文件已生成")
+                    # 清理临时文件
+                    if temp_metadata_output.exists():
+                        temp_metadata_output.unlink()
+
+            return True
 
         # 需要进行音频处理的情况
         # 构建FFmpeg命令
@@ -186,6 +226,35 @@ def process_media(input_path: str, output_path: Optional[str] = None, start_time
                     print("歌词嵌入成功!")
                 else:
                     print("歌词嵌入失败，但音频文件已生成")
+
+            # 添加元数据
+            if metadata_file:
+                if lrc_path:
+                    print("\n正在添加元数据...")
+                else:
+                    print("\n正在添加元数据...")
+
+                # 等待前面的处理完成
+                time.sleep(0.5)
+
+                # 创建临时文件名来避免原地编辑
+                temp_metadata_output = output_path.with_name(f"{output_path.stem}_temp_metadata{output_path.suffix}")
+
+                success = write_metadata_from_file(output_path, metadata_file, temp_metadata_output)
+
+                if success:
+                    # 成功后替换原文件
+                    import shutil
+                    time.sleep(0.2)  # 等待文件释放
+                    if output_path.exists():
+                        output_path.unlink()
+                    shutil.move(str(temp_metadata_output), str(output_path))
+                    print("元数据添加成功!")
+                else:
+                    print("元数据添加失败，但音频文件已生成")
+                    # 清理临时文件
+                    if temp_metadata_output.exists():
+                        temp_metadata_output.unlink()
 
             return True
         else:
@@ -254,6 +323,7 @@ def print_help():
     -t <时长>            裁剪指定时长
     -o <输出文件>        指定输出文件路径
     -l <LRC文件>         嵌入LRC歌词文件（保留时间戳）
+    -metadata <文件>    从元数据文件添加元数据（标题、艺术家、封面等）
     -c <级别>            FLAC压缩级别 (0-8，默认5)
     -h, --help           显示帮助信息
 
@@ -264,9 +334,27 @@ def print_help():
     FLAC格式支持带时间戳的歌词，格式为 [mm:ss.xx]歌词内容
     生成的FLAC文件中的歌词可以被支持的音乐播放器显示为同步歌词
 
+元数据支持:
+    支持从元数据文件读取并添加各种元数据，包括：
+    - 基本信息：标题、艺术家、专辑、日期、流派等
+    - 封面图片：支持本地路径、网络URL、Base64编码
+    - 支持B站特殊格式的图片URL
+
+    元数据文件格式：
+    标题(TITLE)：歌曲名称
+    艺术家(ARTIST)：歌手名
+    专辑(ALBUM)：专辑名
+    封面图片(COVER_IMAGE): /path/to/image.jpg
+
 示例:
     # 从MP4提取音频，删除前7秒，转为FLAC并嵌入歌词
     python video_to_audio.py input.mp4 -ss 7 -l 歌词.lrc
+
+    # 从MP4提取音频，添加元数据（包括封面）
+    python video_to_audio.py input.mp4 -metadata metadata.txt
+
+    # 从MP4提取音频，同时嵌入歌词和添加元数据
+    python video_to_audio.py input.mp4 -l lyrics.lrc -metadata metadata.txt
 
     # 从MP4提取音频，删除前30秒，转为FLAC并嵌入歌词
     python video_to_audio.py input.mp4 -ss 00:30 -l 歌词.lrc
@@ -284,7 +372,7 @@ def print_help():
     python video_to_audio.py audio.wav -o output.flac -l lyrics.lrc
 
     # 所有功能组合
-    python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -c 8
+    python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -metadata metadata.txt -c 8
     """)
 
 
@@ -307,6 +395,7 @@ def main():
     start_time = None
     duration = None
     lrc_path = None
+    metadata_file = None
     flac_compression = DEFAULT_FLAC_COMPRESSION
 
     # 解析参数
@@ -330,6 +419,9 @@ def main():
         elif args[i] == '-l' and i + 1 < len(args):
             lrc_path = args[i + 1]
             i += 2
+        elif args[i] == '-metadata' and i + 1 < len(args):
+            metadata_file = args[i + 1]
+            i += 2
         elif args[i] == '-c' and i + 1 < len(args):
             try:
                 flac_compression = int(args[i + 1])
@@ -345,7 +437,7 @@ def main():
 
     # 处理文件
     success = process_media(input_file, output_path, start_time, duration,
-                           lrc_path, flac_compression)
+                           lrc_path, flac_compression, metadata_file)
 
     if not success:
         sys.exit(1)
