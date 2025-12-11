@@ -1,0 +1,8 @@
+标题(TITLE)：测试歌曲
+艺术家(ARTIST)：测试歌手
+专辑(ALBUM)：测试专辑
+日期(DATE)：2024-12-11
+流派(GENRE)：流行
+作曲家(COMPOSER)：测试作曲
+词作者(LYRICIST)：测试作词
+封面图片(COVER_IMAGE):test\wechat_2025-12-11_191810_117.png

@@ -1,0 +1,8 @@
+标题(TITLE)：歌曲
+艺术家(ARTIST)：歌手
+专辑(ALBUM)：专辑
+日期(DATE)：日期
+流派(GENRE)：流派
+作曲家(COMPOSER)：作曲者
+词作者(LYRICIST)：作词
+封面图片(COVER_IMAGE):https://i2.hdslb.com/bfs/archive/2b280d836df5d6af7384d647caad7db6bc5ff863.jpg@672w_378h_1c_!web-home-common-cover.avif

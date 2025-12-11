@@ -1,191 +1,193 @@
-# Video to Audio with LRC
+# FLAC元数据处理工具集
 
-[中文说明](README_cn.md) | English
+[English](README_en.md) | 中文说明
 
-A powerful video-to-audio conversion toolkit that extracts audio from videos and embeds LRC lyrics, specializing in FLAC lossless format conversion.
+这是一个用于处理FLAC文件元数据的工具集，包括视频转音频、歌词嵌入、元数据读写等功能。
 
-## Features
+## 功能特点
 
-### ✅ Completed Features
+- **视频转音频**：将视频文件转换为FLAC格式音频
+- **歌词嵌入**：支持LRC格式歌词嵌入，保留时间戳
+- **元数据管理**：读取和写入FLAC文件元数据
+- **封面图片支持**：支持多种格式的封面图片
+  - 本地图片路径
+  - 网络图片URL
+  - Base64编码图片
+  - B站特殊格式URL
+- **格式转换**：自动转换AVIF等格式为JPEG
+- **音频裁剪**：支持精确的时间定位和时长控制
+- **多编码支持**：自动检测UTF-8、GBK、GB2312等编码
 
-- [x] **Video to Audio Conversion** - Convert multiple video formats to FLAC lossless audio
-- [x] **LRC Lyrics Embedding** - Embed timestamped LRC lyrics into FLAC files
-- [x] **Audio Clipping** - Extract audio from specified time with duration control
-- [x] **Lyrics Time Adjustment** - Shift lyrics forward or backward by specified seconds
-- [x] **Multi-encoding Support** - Auto-detect UTF-8, GBK, GB2312 and other encodings
-- [x] **Metadata Extraction** - Extract artist, title, album info from LRC files
-- [x] **Lyrics Viewer** - Quickly view embedded lyrics in FLAC files
-- [x] **NetEase Cloud Music Support** - Lyrics display properly in NetEase Cloud Music (other players to be tested)
-
-### 🚧 Upcoming Features
-
-- [ ] Add cover art, artist, album name metadata editing
-- [ ] One-click Bilibili video and lyrics download, one-click lossless music conversion (under consideration)
-
-## Tool List
-
-### 1. video_to_audio.py - Video to FLAC Converter
-
-Specialized in video to FLAC format conversion and lyrics embedding with timestamp support for synchronized lyrics.
-
-**Basic Usage:**
+## 安装依赖
 
 ```bash
-python video_to_audio.py <input_file> [options]
+pip install Pillow requests
 ```
 
-**Common Examples:**
+系统需要安装FFmpeg：
+- Windows: 从 https://ffmpeg.org/download.html 下载
+- Linux: `sudo apt install ffmpeg`
+- macOS: `brew install ffmpeg`
+
+## 使用方法
+
+### 1. video_to_audio.py - 视频转音频工具
+
+将视频文件转换为FLAC格式音频，支持歌词嵌入。
 
 ```bash
-# Extract audio from MP4, convert to FLAC and embed lyrics
-python video_to_audio.py input.mp4  -l lyrics.lrc
+# 基本转换
+python video_to_audio.py input.mp4
 
-# Extract audio from MP4, remove first 7 seconds, convert to FLAC and embed lyrics
+# 删除前7秒，转换并嵌入歌词
 python video_to_audio.py input.mp4 -ss 7 -l lyrics.lrc
 
-# Extract audio from MP4, remove first 30 seconds, convert to FLAC and embed lyrics
-python video_to_audio.py input.mp4 -ss 00:30 -l lyrics.lrc
+# 从第30秒开始转换
+python video_to_audio.py video.mp4 -ss 30
 
+# 指定输出文件和压缩级别
+python video_to_audio.py audio.wav -o output.flac -c 8
 
-# Highest FLAC compression level
-python video_to_audio.py audio.wav -c 8
-
-# Specify output file
-python video_to_audio.py audio.wav -o output.flac -l lyrics.lrc
+# 所有功能组合
+python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -c 8
 ```
 
-**Parameters:**
+#### 参数说明
+- `-ss <时间>`: 从指定时间开始
+- `-t <时长>`: 裁剪指定时长
+- `-o <输出文件>`: 指定输出文件
+- `-l <LRC文件>`: 嵌入歌词文件
+- `-c <级别>`: FLAC压缩级别 (0-8)
 
-- `-ss <time>` - Start trimming from specified time
-- `-t <duration>` - Trim for specified duration
-- `-o <output_file>` - Specify output file path
-- `-l <LRC_file>` - Embed LRC lyrics file (keep timestamps)
-- `-c <level>` - FLAC compression level (0-8, default 5)
-- `-h, --help` - Show help information
+### 2. flac_metadata_utils.py - 元数据处理工具
 
-### 2. lrc_time_adjuster.py - LRC Lyrics Time Adjuster
-
-Adjust LRC file timestamps by shifting all lyrics forward or backward.
-
+#### 查看元数据
 ```bash
-# Shift lyrics 7 seconds forward
-python lrc_time_adjuster.py song.lrc -7
-
-# Shift lyrics 5 seconds backward
-python lrc_time_adjuster.py song.lrc 5
+# 查看FLAC文件所有元数据
+python flac_metadata_utils.py audio.flac
 ```
 
-### 3. view_lyrics.py - FLAC Lyrics Viewer
-
-Quickly view lyrics embedded in FLAC files.
-
+#### 写入元数据
 ```bash
-# View lyrics in specified FLAC file
-python view_lyrics.py music.flac
+# 从元数据文件写入
+python flac_metadata_utils.py audio.flac --metadata metadata.txt
 
-# View lyrics in all FLAC files in current directory
-python view_lyrics.py
+# 写入到新文件
+python flac_metadata_utils.py audio.flac --metadata metadata.txt output.flac
 ```
 
-## Adding Lyrics to Existing Audio Files
+#### 元数据文件格式示例
+```
+标题(TITLE)：歌曲名称
+艺术家(ARTIST)：歌手名
+专辑(ALBUM)：专辑名
+日期(DATE)：2024-01-01
+流派(GENRE)：流行
+作曲家(COMPOSER)：作曲者
+词作者(LYRICIST)：作词者
+封面图片(COVER_IMAGE):/path/to/image.jpg
+封面图片(COVER_IMAGE):https://example.com/image.jpg
+封面图片(COVER_IMAGE):data:image/jpeg;base64,/9j/4AAQ...
+```
 
-You can also add lyrics to existing FLAC audio files without converting the audio:
+## 测试
 
-### Basic Usage for Adding Lyrics
-
+### 运行单元测试
 ```bash
-# Add lyrics to existing FLAC file (will modify the file in place)
-python video_to_audio.py audio.flac -l lyrics.lrc
+# 运行所有测试
+python new_test/run_all_tests.py
 
-# Add lyrics and create a new file (recommended)
-python video_to_audio.py audio.flac -l lyrics.lrc -o audio_with_lyrics.flac
+# 创建示例测试文件
+python new_test/test_flac_metadata_utils.py --create-samples
+
+# 创建手动测试指南
+python new_test/test_video_to_audio.py --create-guide
 ```
 
-### Workflow Example
-
-```bash
-# Step 1: Check if the audio file already has lyrics
-python view_lyrics.py music.flac
-
-# Step 2: Add lyrics to the audio file
-python video_to_audio.py music.flac -l song.lrc -o music_with_lyrics.flac
-
-# Step 3: Verify lyrics were added successfully
-python view_lyrics.py music_with_lyrics.flac
-
-# Step 4: If lyrics timing is incorrect, adjust them
-python lrc_time_adjuster.py song.lrc -5  # Move lyrics 5 seconds forward
-python video_to_audio.py music.flac -l song_-5s.lrc -o music_fixed.flac
+### 测试文件结构
+```
+new_test/
+├── __init__.py
+├── test_flac_metadata_utils.py  # 元数据处理测试
+├── test_video_to_audio.py       # 视频转换测试
+├── run_all_tests.py            # 运行所有测试
+└── sample_files/               # 示例测试文件
 ```
 
-### Notes
+## 支持的图片格式
 
-- The program automatically detects when input is already FLAC and no audio processing is needed
-- Lyrics are embedded as metadata with timestamps preserved
-- Maximum lyrics length is 2000 characters (will be truncated if longer)
-- Supported LRC format: `[mm:ss.xx]lyrics` with standard metadata tags
+### 网络图片
+- 常规URL: `https://example.com/image.jpg`
+- B站格式: `https://i2.hdslb.com/bfs/archive/xxx.jpg@672w_378h_1c_!web-search-common-cover.avif`
 
-## Test Files
+### Base64图片
+```
+data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...
+```
 
-Test files are provided in the `test` directory:
+### 本地图片
+- JPEG/JPG
+- PNG（支持透明度）
+- AVIF（自动转换）
 
-- `测试.mp4` - Test video file
-- `胡彦斌——《纸短情长》_哔哩哔哩_bilibili.lrc` - Original lyrics file
-- `胡彦斌——《纸短情长》_哔哩哔哩_bilibili-6.5s.lrc` - Time-adjusted lyrics file
-- `测试2_trimmed_with_lyrics.flac` - FLAC file with embedded lyrics
+## 项目结构
 
-## Bilibili Video Download
+```
+videoToAudioWithLRC/
+├── video_to_audio.py          # 视频转音频主程序
+├── flac_metadata_utils.py     # 元数据处理工具库
+├── new_test/                  # 单元测试
+│   ├── test_flac_metadata_utils.py
+│   ├── test_video_to_audio.py
+│   └── run_all_tests.py
+├── test/                      # 测试示例文件
+└── README.md                  # 本文档
+```
 
-For downloading Bilibili videos, you can use the following Tampermonkey scripts:
+## 常见问题
 
-1. **Bilibili Video Downloader**
+### 1. FFmpeg未安装
+```
+错误: 未找到FFmpeg
+```
+解决：从 https://ffmpeg.org/download.html 下载安装
 
-   - Download URL: https://update.greasyfork.org/scripts/413228/bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD.user.js
-   - Install Tampermonkey browser extension
-   - Visit the script URL and click "Install"
-   - Go to any Bilibili video page and use the download button
+### 2. 内存不足
+处理大文件时可能出现内存不足
+解决：分批处理或使用更强大的机器
 
-2. **Bilibili CC Subtitle Tool**
-   - Download URL: https://update.greasyfork.org/scripts/378513/Bilibili%20CC%E5%AD%97%E5%B9%95%E5%B7%A5%E5%85%B7.user.js
-   - Use this tool to download CC subtitles which can be converted to LRC format
+### 3. 编码问题
+```
+UnicodeDecodeError
+```
+解决：确保文件使用UTF-8编码保存
 
-## Requirements
+### 4. 权限问题
+```
+错误: 无法写入文件
+```
+解决：检查文件权限，确保有写入权限
 
-- Python 3.x
-- FFmpeg (required)
+## 开发说明
 
-### Install FFmpeg
+### 代码结构
+- `video_to_audio.py`: 调用flac_metadata_utils处理元数据
+- `flac_metadata_utils.py`: 核心元数据处理功能
+  - 歌词处理（parse_lrc_file, embed_lyrics_to_flac）
+  - 元数据读写（parse_metadata_file, write_metadata_to_flac）
+  - 图片处理（download_image, prepare_cover_image）
+  - 信息提取（get_flac_metadata, display_metadata）
 
-1. Visit [FFmpeg official website](https://ffmpeg.org/download.html)
-2. Download the version for your platform
-3. Add FFmpeg to system PATH environment variable
+### 扩展功能
+可以通过修改`flac_metadata_utils.py`来添加更多功能：
+- 支持更多音频格式
+- 添加更多元数据字段
+- 支持更多图片格式
 
-## FAQ
+## 许可证
 
-1. **Q: Getting "FFmpeg not found" error?**
-   A: Make sure FFmpeg is installed and added to your system PATH.
+MIT License
 
-2. **Q: Do I need special software for FLAC lyrics?**
-   A: No, lyrics are embedded directly into FLAC files using FFmpeg.
+## 贡献
 
-3. **Q: What audio formats are supported?**
-   A: Input supports all FFmpeg-supported formats, output currently focuses on FLAC lossless format.
-
-4. **Q: Lyrics timing is inaccurate?**
-   A: Use the `lrc_time_adjuster.py` tool to adjust lyrics time offset.
-
-## Technical Features
-
-- **Lossless Compression**: FLAC format ensures no quality loss
-- **Synchronized Lyrics**: Support timestamped lyrics for synchronized display in supporting music players
-- **Metadata Preservation**: Automatically extract and preserve basic song information
-- **Multi-encoding Support**: Intelligent detection of multiple text encodings
-- **Flexible Trimming**: Support precise time positioning and duration control
-
-## Development Status
-
-The project is under continuous development. Welcome to submit issue reports and feature suggestions.
-
-## License
-
-This project is open source. Please check the LICENSE file for details.
+欢迎提交Issue和Pull Request！

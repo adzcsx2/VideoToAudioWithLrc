@@ -14,11 +14,10 @@ import shutil
 from pathlib import Path
 from typing import Optional, Dict, Tuple
 
-# Pre-compile regex pattern for better performance
-TIMESTAMP_PATTERN = re.compile(r'\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]')
+# 导入元数据处理模块
+from flac_metadata_utils import embed_lyrics_to_flac, write_metadata_to_flac
 
 # Constants
-MAX_LYRICS_LENGTH = 2000
 DEFAULT_FLAC_COMPRESSION = 5
 
 
@@ -72,144 +71,10 @@ def format_time(seconds):
         return f"{minutes:02d}:{secs:02d}"
 
 
-def parse_lrc_file(lrc_path: Path) -> Tuple[Dict[str, str], str, str]:
-    """解析LRC文件，保留时间戳的歌词"""
-    encodings = ['utf-8', 'gbk', 'gb2312', 'big5', 'latin-1']
-    lrc_content = None
-
-    # 尝试不同编码读取
-    for encoding in encodings:
-        try:
-            with open(lrc_path, 'r', encoding=encoding) as f:
-                lrc_content = f.read()
-            break
-        except UnicodeDecodeError:
-            continue
-
-    if lrc_content is None:
-        return {}, "", ""
-
-    metadata = {}
-    lyrics_with_timestamp = []
-    pure_lyrics_lines = []
-
-    for line in lrc_content.split('\n'):
-        line = line.strip()
-        if not line:
-            continue
-
-        # 解析元数据
-        if line.startswith('[ar:'):
-            metadata['ARTIST'] = line[4:-1]
-        elif line.startswith('[ti:'):
-            metadata['TITLE'] = line[4:-1]
-        elif line.startswith('[al:'):
-            metadata['ALBUM'] = line[4:-1]
-        elif line.startswith('[au:'):
-            metadata['COMPOSER'] = line[4:-1]
-        elif line.startswith('[offset:'):
-            try:
-                metadata['OFFSET'] = str(int(line[8:-1]))
-            except:
-                pass
-
-        # 如果行包含时间戳
-        if TIMESTAMP_PATTERN.search(line):
-            # 保留整行（包括时间戳）
-            lyrics_with_timestamp.append(line)
-
-            # 同时提取纯歌词（去除时间戳）
-            pure_lyric = TIMESTAMP_PATTERN.sub('', line).strip()
-            if pure_lyric and not pure_lyric.startswith('['):
-                pure_lyrics_lines.append(pure_lyric)
-
-    # 带时间戳的歌词（用于FLAC）
-    timed_lyrics = '\n'.join(lyrics_with_timestamp)
-    # 纯歌词（用于M4A）
-    pure_lyrics = '\n'.join(pure_lyrics_lines)
-
-    return metadata, timed_lyrics, pure_lyrics
 
 
 
 
-def embed_lyrics_to_flac(flac_path: Path, lrc_path: Path, output_path: Path) -> bool:
-    """嵌入歌词到FLAC（保留时间戳）"""
-    try:
-        metadata, timed_lyrics, pure_lyrics = parse_lrc_file(lrc_path)
-
-        # 如果没有歌词，直接复制文件
-        if not timed_lyrics:
-            print("警告: 没有找到有效的歌词内容")
-            shutil.copy2(flac_path, output_path)
-            return True
-
-        # 限制歌词长度，避免过长导致失败
-        original_length = len(timed_lyrics)
-        if len(timed_lyrics) > MAX_LYRICS_LENGTH:
-            timed_lyrics = timed_lyrics[:MAX_LYRICS_LENGTH] + f"\n...(歌词过长，已截断到{MAX_LYRICS_LENGTH}字符)"
-            print(f"注意: 歌词过长({original_length}字符)，已截断到{MAX_LYRICS_LENGTH}字符")
-
-        # 等待一下，确保文件不被锁定
-        time.sleep(0.5)
-
-        # 使用最简单直接的方法：创建带歌词的新文件
-        # 首先确保输入输出文件不同
-        if flac_path.resolve() == output_path.resolve():
-            # 如果相同，使用临时文件
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.flac')
-            temp_file.close()
-            actual_output = Path(temp_file.name)
-        else:
-            actual_output = output_path
-
-        # 构建元数据参数
-        metadata_args = []
-        for key, value in metadata.items():
-            if key and value and len(str(value)) < 100:
-                metadata_args.extend(['-metadata', f"{key}={value}"])
-
-        # 使用FFmpeg一次性创建带歌词的文件
-        cmd = [
-            'ffmpeg', '-i', str(flac_path),
-            '-c', 'copy',
-            '-metadata', f"LYRICS={timed_lyrics}",
-            *metadata_args,
-            '-y', str(actual_output)
-        ]
-
-        # 执行命令
-        result = subprocess.run(cmd,
-                              capture_output=True,
-                              text=True,
-                              encoding='utf-8',
-                              creationflags=subprocess.CREATE_NO_WINDOW)
-
-        if result.returncode == 0:
-            print(f"成功嵌入歌词({len(timed_lyrics)}字符)")
-
-            # 如果使用了临时文件，移动到最终位置
-            if actual_output != output_path:
-                time.sleep(0.2)  # 再次等待确保文件释放
-                if output_path.exists():
-                    output_path.unlink()
-                shutil.move(str(actual_output), str(output_path))
-
-            return True
-        else:
-            # 打印错误信息
-            print(f"FFmpeg错误: {result.stderr[:300]}...")
-            return False
-
-    except Exception as e:
-        print(f"嵌入FLAC歌词时发生异常: {e}")
-        # 如果发生错误，至少确保输出文件存在
-        if not output_path.exists() and flac_path.exists():
-            try:
-                shutil.copy2(flac_path, output_path)
-            except:
-                pass
-        return False
 
 
 def process_media(input_path: str, output_path: Optional[str] = None, start_time: Optional[float] = None,
