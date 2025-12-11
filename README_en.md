@@ -8,6 +8,8 @@
 
 A fully-featured video to FLAC audio converter tool with lyrics embedding and metadata management. The project provides both command-line interface and graphical user interface.
 
+![GUI](dist/gui.png)
+
 ## Key Features
 
 - **Video to Audio Conversion**: Convert video files (MP4, AVI, MKV, etc.) to FLAC lossless audio
