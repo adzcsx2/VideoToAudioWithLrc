@@ -25,23 +25,27 @@ A powerful video-to-audio conversion toolkit that extracts audio from videos and
 ## Tool List
 
 ### 1. video_to_audio.py - Video to FLAC Converter
+
 Specialized in video to FLAC format conversion and lyrics embedding with timestamp support for synchronized lyrics.
 
 **Basic Usage:**
+
 ```bash
 python video_to_audio.py <input_file> [options]
 ```
 
 **Common Examples:**
+
 ```bash
+# Extract audio from MP4, convert to FLAC and embed lyrics
+python video_to_audio.py input.mp4  -l lyrics.lrc
+
 # Extract audio from MP4, remove first 7 seconds, convert to FLAC and embed lyrics
 python video_to_audio.py input.mp4 -ss 7 -l lyrics.lrc
 
 # Extract audio from MP4, remove first 30 seconds, convert to FLAC and embed lyrics
 python video_to_audio.py input.mp4 -ss 00:30 -l lyrics.lrc
 
-# Start conversion from 30 seconds and embed lyrics
-python video_to_audio.py video.mp4 -ss 30 -l lyrics.lrc
 
 # Highest FLAC compression level
 python video_to_audio.py audio.wav -c 8
@@ -51,6 +55,7 @@ python video_to_audio.py audio.wav -o output.flac -l lyrics.lrc
 ```
 
 **Parameters:**
+
 - `-ss <time>` - Start trimming from specified time
 - `-t <duration>` - Trim for specified duration
 - `-o <output_file>` - Specify output file path
@@ -59,6 +64,7 @@ python video_to_audio.py audio.wav -o output.flac -l lyrics.lrc
 - `-h, --help` - Show help information
 
 ### 2. lrc_time_adjuster.py - LRC Lyrics Time Adjuster
+
 Adjust LRC file timestamps by shifting all lyrics forward or backward.
 
 ```bash
@@ -70,6 +76,7 @@ python lrc_time_adjuster.py song.lrc 5
 ```
 
 ### 3. view_lyrics.py - FLAC Lyrics Viewer
+
 Quickly view lyrics embedded in FLAC files.
 
 ```bash
@@ -112,6 +119,7 @@ python video_to_audio.py music.flac -l song_-5s.lrc -o music_fixed.flac
 ```
 
 ### Notes
+
 - The program automatically detects when input is already FLAC and no audio processing is needed
 - Lyrics are embedded as metadata with timestamps preserved
 - Maximum lyrics length is 2000 characters (will be truncated if longer)
@@ -131,6 +139,7 @@ Test files are provided in the `test` directory:
 For downloading Bilibili videos, you can use the following Tampermonkey scripts:
 
 1. **Bilibili Video Downloader**
+
    - Download URL: https://update.greasyfork.org/scripts/413228/bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD.user.js
    - Install Tampermonkey browser extension
    - Visit the script URL and click "Install"
