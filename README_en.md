@@ -1,4 +1,4 @@
-# Video to FLAC Audio Converter
+# Music Video to Lossless Audio Converter (Video to FLAC with Lyrics)
 
 [English](README_en.md) | [中文说明](README.md)
 
@@ -6,23 +6,23 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![FFmpeg](https://img.shields.io/badge/FFmpeg-required-orange.svg)](https://ffmpeg.org)
 
-A fully-featured video to FLAC audio converter tool with lyrics embedding and metadata management. The project provides both command-line interface and graphical user interface.
+A professional music video converter tool that transforms music videos (MVs, live performances, music streams, etc.) into high-quality lossless FLAC audio with automatically embedded synchronized lyrics. Supports both GUI and command-line interfaces.
 
 ![GUI](dist/gui.png)
 
 ## Key Features
 
-- **Video to Audio Conversion**: Convert video files (MP4, AVI, MKV, etc.) to FLAC lossless audio
-- **Lyrics Embedding**: Support LRC format lyrics embedding with timestamps
-- **Metadata Management**: Add song information (title, artist, album, date, genre, etc.)
-- **Cover Art Support**: Support multiple cover art formats
-  - Local image paths
-  - Web image URLs
+- 🎵 **Music Video Conversion**: Convert MVs, live performances, music streams to high-quality FLAC lossless audio
+- 📝 **Synchronized Lyrics Embedding**: Perfect LRC format support with precise timestamps for synchronized display
+- 🎼 **Professional Metadata**: Complete song information management (title, artist, album, date, genre, composer, lyricist, etc.)
+- 🖼️ **Smart Cover Art Processing**: Multiple cover art support
+  - Local image files (JPG/PNG/AVIF, etc.)
+  - Web image URLs (auto-download)
   - Base64 encoded images
-  - Bilibili special format URLs
-- **Format Conversion**: Automatically convert AVIF and other formats to JPEG
-- **Audio Trimming**: Support precise time positioning and duration control
-- **Multi-encoding Support**: Automatically detect UTF-8, GBK, GB2312 and other encodings
+  - Special URLs from Bilibili, Weibo, etc. (auto-optimized)
+- ✂️ **Precise Audio Trimming**: Support custom start time and duration for audio extraction
+- 🌐 **Intelligent Encoding Detection**: Automatically handle UTF-8, GBK, GB2312 and various lyrics file encodings
+- 🎚️ **Adjustable Compression Level**: 0-8 level FLAC compression to balance file size and audio quality
 
 ## Installation
 
@@ -106,24 +106,25 @@ python video_to_audio.py video.mp4 -ss 01:00 -t 03:00 -l lyrics.lrc -metadata me
 
 ```
 videoToAudioWithLRC/
-├── video_to_audio.py          # Command-line main program
-├── video_to_audio_gui.py      # GUI application program
-├── flac_metadata_utils.py     # Core metadata processing module
-├── lrc_time_adjuster.py       # Lyrics time adjustment tool
-├── view_lyrics.py             # Lyrics viewer tool
-├── build_exe.py              # Script to package as exe
-├── create_portable_package.py # Script to create portable package
-├── download_ffmpeg.py        # FFmpeg download helper
-├── test/                      # Test files directory
-│   ├── *.mp4                  # Test videos
-│   ├── *.lrc                  # Test lyrics
-│   ├── *.txt                  # Test metadata
-│   └── *.flac                 # Generated audio files
-├── new_test/                  # Unit test directory
-│   ├── test_flac_metadata_utils.py
-│   ├── test_video_to_audio.py
-│   └── run_all_tests.py
-└── README.md                  # This documentation
+├── 🎯 Core Programs
+│   ├── video_to_audio_gui.py      # GUI application main program
+│   └── video_to_audio.py          # Command-line version
+├── 🔧 Core Modules
+│   └── flac_metadata_utils.py     # Lyrics embedding and metadata processing core
+├── 🛠️ Utility Tools
+│   ├── lrc_time_adjuster.py       # Lyrics time adjustment tool
+│   ├── view_lyrics.py             # Lyrics viewer tool
+│   └── download_ffmpeg.py        # FFmpeg auto-download helper
+├── 📦 Packaging Tools
+│   ├── build_exe.py              # Package as standalone exe
+│   └── create_portable_package.py # Create portable version
+├── 🚀 Quick Start
+│   ├── 一键打包.bat               # Windows one-click packaging script
+│   └── 启动GUI.bat                # Windows quick GUI launch script
+├── 🧪 Testing
+│   └── new_test/                  # Unit test directory
+└── 📚 Documentation
+    └── README.md                  # Project documentation
 ```
 
 ## Metadata File Format
@@ -199,26 +200,43 @@ python new_test/test_video_to_audio.py --create-guide
 - Automatic notification upon completion
 - One-click open output folder
 
-## Workflow Diagram
+## Music Video Conversion Workflow
 
 ```
-Input File (MP4/AVI/etc.)
+📹 Music Video (MV/Live Performance/Music Stream)
      ↓
-Video to FLAC (FFmpeg)
+🎵 Extract Audio and Convert to FLAC Lossless Format
      ↓
-[Optional] Embed Lyrics
+📝 Embed LRC Synchronized Lyrics (preserve timestamps)
      ↓
-[Optional] Add Metadata (from metadata.txt)
+🎼 Add Song Metadata (title/artist/album/etc.)
      ↓
-Output FLAC File (with lyrics and/or metadata)
+🖼️ Embed Cover Art
+     ↓
+🎧 Output Complete FLAC File (lossless audio + lyrics + cover)
 ```
 
 ## Usage Tips
 
-1. **Batch Processing**: You can write batch scripts to process multiple files
-2. **Metadata Templates**: Create metadata template files in different styles for reuse
-3. **Auto Naming**: When output file is not specified, program automatically generates marked file names
-4. **Error Debugging**: Check log output for detailed processing information
+1. **Lyrics File Preparation**:
+   - Use lyrics files that exactly match the video content
+   - Ensure timestamps are accurate for synchronized lyrics display
+   - Multiple encodings supported, no conversion needed for Chinese lyrics
+
+2. **Batch Processing Music Videos**:
+   - Write batch scripts to process multiple MVs at once
+   - Use unified metadata templates for efficiency
+   - Recommend each video to have its corresponding lyrics file
+
+3. **Audio Quality Optimization**:
+   - Choose higher FLAC compression levels (5-8) for better audio quality
+   - Preserve original audio sample rate, avoid downsampling
+   - Ensure video source has sufficient audio quality
+
+4. **Metadata Completion**:
+   - Accurately fill song information for music player recognition
+   - Use high-resolution cover art, recommend 1000x1000 pixels or above
+   - Include detailed information like composer and lyricist
 
 ## Frequently Asked Questions
 
@@ -287,18 +305,20 @@ You can add more features by modifying corresponding modules:
 
 ### v2.0.0 (2025-12-11)
 
-- Added GUI interface
-- Support packaging as standalone exe file
-- Added FFmpeg auto-download feature
-- Optimized image processing, support Bilibili special URLs
-- Improved documentation and test cases
+- ✨ Brand new GUI interface for more intuitive operation
+- ✨ Support packaging as standalone exe, no Python installation required
+- ✨ FFmpeg automatic download and configuration
+- 🎵 Optimized music video processing logic
+- 📝 Improved lyrics embedding algorithm, perfectly preserves timestamps
+- 🖼️ Enhanced image processing, supports special URLs from Bilibili, Weibo, etc.
+- 📚 Improved documentation and usage guides
 
 ### v1.0.0 (2025-12-10)
 
-- Initial release
-- Support video to FLAC conversion
-- Support lyrics embedding
-- Support metadata management
+- 🎉 Project initial release
+- ✨ Core functionality: music video to FLAC conversion
+- ✨ LRC lyrics embedding support
+- ✨ Complete metadata management system
 
 ## Contributing
 
